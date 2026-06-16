@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI English Tutor (Offline)</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+    background: #0f172a;
+    color: white;
+}
+
+header {
+    padding: 15px;
+    text-align: center;
+    background: #1e293b;
+    font-size: 20px;
+}
+
+#chat {
+    height: 70vh;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.msg {
+    margin: 10px;
+    padding: 10px;
+    border-radius: 10px;
+    max-width: 70%;
+}
+
+.user {
+    background: #2563eb;
+    margin-left: auto;
+    text-align: right;
+}
+
+.bot {
+    background: #334155;
+}
+
+.inputBox {
+    display: flex;
+    padding: 10px;
+    background: #1e293b;
+}
+
+input {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+}
+
+button {
+    margin-left: 5px;
+    padding: 10px;
+    border: none;
+    background: #22c55e;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<header>🧠 Offline AI English Tutor</header>
+
+<div id="chat"></div>
+
+<div class="inputBox">
+    <input id="input" placeholder="Type or speak English..." />
+    <button onclick="send()">Send</button>
+    <button onclick="startSpeech()">🎤</button>
+</div>
+
+<script>
+
+let xp = 0;
+let level = 1;
+
+// 📚 50+ INTELLIGENT PATTERNS (EXPANDABLE TO 500+)
+const brain = [
+  { keys: ["hello", "hi", "hey"], reply: "Hello! How are you today?" },
+  { keys: ["how are you"], reply: "I am fine! What about you?" },
+  { keys: ["your name"], reply: "I am your AI English tutor." },
+  { keys: ["help"], reply: "I will help you improve your English speaking." },
+  { keys: ["thank"], reply: "You are welcome!" },
+  { keys: ["sorry"], reply: "No problem! Keep learning." },
+  { keys: ["sad"], reply: "Don't worry, keep practicing English." },
+  { keys: ["happy"], reply: "That's great! Keep it up!" },
+  { keys: ["practice"], reply: "Let's practice: I am learning English every day." },
+  { keys: ["english"], reply: "Speak English daily to improve fluency." },
+  { keys: ["fine"], reply: "That's good! Keep practicing English." },
+  { keys: ["what are you doing", "what you doing"], reply: "I am helping you learn English." },
+  { keys: ["time"], reply: "Check your device for exact time." },
+  { keys: ["weather"], reply: "Weather looks good today!" },
+  { keys: ["where are you from"], reply: "I exist in the digital world." },
+  { keys: ["ok", "okay"], reply: "Great! Let's continue learning." },
+  { keys: ["bye", "goodbye"], reply: "Goodbye! Keep practicing English." },
+  { keys: ["motivate me"], reply: "You can become fluent with daily practice!" },
+  { keys: ["i am tired"], reply: "Take rest, then continue learning." },
+  { keys: ["i am busy"], reply: "No problem, learn later." },
+  { keys: ["repeat"], reply: "Please repeat after me slowly." },
+  { keys: ["slow"], reply: "Take your time and speak slowly." },
+  { keys: ["fast"], reply: "Try speaking clearly, not fast." },
+  { keys: ["meaning"], reply: "Tell me the word, I will explain." },
+  { keys: ["translate"], reply: "I can help you practice English meaning." },
+  { keys: ["speak english"], reply: "Try speaking simple English sentences." },
+  { keys: ["grammar"], reply: "Good grammar comes with practice." },
+  { keys: ["mistake"], reply: "Mistakes help you learn better." },
+  { keys: ["confidence"], reply: "Speak daily to build confidence." },
+  { keys: ["job interview"], reply: "Practice speaking clearly and confidently." },
+  { keys: ["study"], reply: "Study English daily for 30 minutes." },
+  { keys: ["school"], reply: "School is a great place to learn." },
+  { keys: ["college"], reply: "College helps improve your knowledge." },
+  { keys: ["friend"], reply: "Friends make learning fun." },
+  { keys: ["family"], reply: "Family support is important." },
+  { keys: ["love"], reply: "Love and kindness are important." },
+  { keys: ["hello", "hi", "hey", "good morning", "good evening"],reply: "Hello! How are you today?"},
+  { keys: ["how are you", "how r you", "what's up"],reply: "I am fine! What about you?"},
+  { keys: ["your name", "who are you"],reply: "I am your AI English tutor."},
+  { keys: ["help", "support", "assist"],reply: "I will help you improve your English speaking."},
+  { keys: ["thank", "thanks", "thank you"],reply: "You are welcome!"},
+  { keys: ["sorry", "apology"],reply: "No problem! Keep learning."},
+  { keys: ["sad", "depressed", "not happy"],reply: "Don't worry, keep practicing English."},
+  { keys: ["happy", "great", "good"],reply: "That's great! Keep it up!"},
+  { keys: ["practice", "learn english"],reply: "Let's practice: I am learning English every day."},
+  { keys: ["english", "fluency"],reply: "Speak English daily to improve fluency."},
+  { keys: ["taru name shu che"],reply: "Akash. I am your AI English tutor."},
+  { keys: ["hello", "hi", "hey"], reply: "Hello! How are you today?" },
+{ keys: ["how are you", "how r you"], reply: "I am fine! What about you?" },
+{ keys: ["your name", "who are you"], reply: "I am your AI English tutor." },
+{ keys: ["help", "support"], reply: "I will help you improve your English speaking." },
+{ keys: ["thank you", "thanks"], reply: "You are welcome!" },
+{ keys: ["sorry"], reply: "No problem! Keep learning." },
+{ keys: ["sad"], reply: "Don't worry, keep practicing English." },
+{ keys: ["happy"], reply: "That's great! Keep it up!" },
+{ keys: ["practice"], reply: "Let's practice English together." },
+{ keys: ["english"], reply: "Speak English daily to improve fluency." },
+{ keys: ["fine"], reply: "That's good! Keep going." },
+{ keys: ["what are you doing"], reply: "I am helping you learn English." },
+{ keys: ["time"], reply: "Check your device for time." },
+{ keys: ["weather"], reply: "Weather looks nice today." },
+{ keys: ["bye"], reply: "Goodbye! See you again." },
+{ keys: ["good morning"], reply: "Good morning! Have a great day." },
+{ keys: ["good night"], reply: "Good night! Sweet dreams." },
+{ keys: ["where are you from"], reply: "I exist in the digital world." },
+{ keys: ["ok"], reply: "Okay! Let's continue." },
+{ keys: ["okay"], reply: "Great!" },
+{ keys: ["motivate me"], reply: "You can achieve fluency with daily practice." },
+{ keys: ["i am tired"], reply: "Take rest and continue later." },
+{ keys: ["i am busy"], reply: "No problem, we can practice later." },
+{ keys: ["repeat"], reply: "Please repeat slowly." },
+{ keys: ["slow"], reply: "Take your time and speak slowly." },
+{ keys: ["fast"], reply: "Speak clearly, not fast." },
+{ keys: ["meaning"], reply: "Tell me the word, I will explain." },
+{ keys: ["translate"], reply: "I can help you understand English." },
+{ keys: ["grammar"], reply: "Grammar improves with practice." },
+{ keys: ["mistake"], reply: "Mistakes help you learn." },
+{ keys: ["confidence"], reply: "Speak daily to build confidence." },
+{ keys: ["job interview"], reply: "Practice clear and confident speaking." },
+{ keys: ["study"], reply: "Study English daily for best results." },
+{ keys: ["school"], reply: "School is a great place to learn." },
+{ keys: ["college"], reply: "College helps build your future." },
+{ keys: ["friend"], reply: "Friends make learning fun." },
+{ keys: ["family"], reply: "Family support is important." },
+{ keys: ["love"], reply: "Love and kindness are important." },
+{ keys: ["food"], reply: "Food gives us energy." },
+{ keys: ["drink water"], reply: "Drink plenty of water daily." },
+{ keys: ["sleep"], reply: "Good sleep is important for health." },
+{ keys: ["exercise"], reply: "Exercise keeps you healthy." },
+{ keys: ["walk"], reply: "Walking is a good habit." },
+{ keys: ["travel"], reply: "Travel is a great experience." },
+{ keys: ["india"], reply: "India is a beautiful country." },
+{ keys: ["city"], reply: "Cities are full of opportunities." },
+{ keys: ["work"], reply: "Hard work leads to success." },
+{ keys: ["success"], reply: "Success comes with practice." },
+{ keys: ["fail"], reply: "Failure is part of learning." },
+{ keys: ["try again"], reply: "Keep trying, you will improve." },
+{ keys: ["learn"], reply: "Learning never stops." },
+{ keys: ["teacher"], reply: "Teachers guide us to success." },
+{ keys: ["student"], reply: "Students should practice daily." },
+{ keys: ["language"], reply: "English is a global language." },
+{ keys: ["speak"], reply: "Speak English without fear." },
+{ keys: ["listen"], reply: "Listening improves understanding." },
+{ keys: ["read"], reply: "Reading improves vocabulary." },
+{ keys: ["write"], reply: "Writing improves grammar." },
+{ keys: ["vocabulary"], reply: "Learn new words daily." },
+{ keys: ["pronunciation"], reply: "Practice correct pronunciation." },
+{ keys: ["fluency"], reply: "Fluency comes with practice." },
+{ keys: ["daily practice"], reply: "Practice every day for improvement." },
+{ keys: ["hard"], reply: "Keep trying, nothing is hard forever." },
+{ keys: ["easy"], reply: "Keep learning step by step." },
+{ keys: ["good"], reply: "Great job!" },
+{ keys: ["bad"], reply: "Don't worry, improve next time." },
+{ keys: ["nice"], reply: "Nice work!" },
+{ keys: ["awesome"], reply: "That's awesome!" },
+{ keys: ["cool"], reply: "Cool!" },
+{ keys: ["boring"], reply: "Try practicing something new." },
+{ keys: ["tired"], reply: "Rest and continue later." },
+{ keys: ["angry"], reply: "Stay calm and relax." },
+{ keys: ["fun"], reply: "Learning English can be fun!" },
+{ keys: ["game"], reply: "Games help learning sometimes." },
+{ keys: ["music"], reply: "Music is good for relaxation." },
+{ keys: ["movie"], reply: "Movies help improve listening." },
+{ keys: ["internet"], reply: "Internet helps you learn many things." },
+{ keys: ["computer"], reply: "Computers help in education." },
+{ keys: ["phone"], reply: "Use phone for learning English too." },
+{ keys: ["chat"], reply: "Let's chat in English!" },
+{ keys: ["talk"], reply: "Let's talk in English." },
+{ keys: ["question"], reply: "Ask me anything." },
+{ keys: ["answer"], reply: "I will try to answer." },
+{ keys: ["daily life"], reply: "Practice English in daily life." },
+{ keys: ["habit"], reply: "Good habits improve life." },
+{ keys: ["goal"], reply: "Set goals and achieve them." },
+{ keys: ["dream"], reply: "Follow your dreams." },
+{ keys: ["future"], reply: "Work hard for a better future." },
+{ keys: ["today"], reply: "Today is a good day to learn." },
+{ keys: ["tomorrow"], reply: "Tomorrow is another chance." },
+{ keys: ["yesterday"], reply: "Learn from yesterday." },
+{ keys: ["good evening"], reply: "Good evening! How was your day?" },
+{ keys: ["good afternoon"], reply: "Good afternoon! Keep learning English." },
+{ keys: ["what is this"], reply: "This is your English learning assistant." },
+{ keys: ["can you help me"], reply: "Yes! I am here to help you anytime." },
+{ keys: ["i don't understand"], reply: "No problem, I will explain slowly." },
+{ keys: ["understand"], reply: "Good! Keep practicing regularly." },
+{ keys: ["repeat again"], reply: "Sure, I will repeat it for you." },
+{ keys: ["speak slowly"], reply: "Okay, I will speak slowly." },
+{ keys: ["correct me"], reply: "Yes, I will correct your English." },
+{ keys: ["is this correct"], reply: "Let me check and guide you." },
+{ keys: ["what is english"], reply: "English is a global communication language." },
+{ keys: ["why learn english"], reply: "It helps you get better jobs and opportunities." },
+{ keys: ["how to speak"], reply: "Practice daily and speak without fear." },
+{ keys: ["how to improve"], reply: "Read, listen, and speak every day." },
+{ keys: ["i am learning"], reply: "Great! Keep learning step by step." },
+{ keys: ["i forgot"], reply: "No problem, we can revise again." },
+{ keys: ["again please"], reply: "Sure, I will help you again." },
+{ keys: ["what time now"], reply: "Please check your device clock." },
+{ keys: ["where am i"], reply: "You are using your learning app." },
+{ keys: ["who made you"], reply: "I was created to help you learn English." },
+{ keys: ["are you real"], reply: "I am a virtual English assistant." },
+{ keys: ["can you talk"], reply: "Yes, I can chat with you in English." },
+{ keys: ["talk to me"], reply: "Sure! Let's talk in English." },
+{ keys: ["let's start"], reply: "Great! Let's start learning." },
+{ keys: ["start lesson"], reply: "Lesson started. Focus and learn." },
+{ keys: ["next lesson"], reply: "Moving to the next lesson." },
+{ keys: ["stop"], reply: "Okay, stopping practice." },
+{ keys: ["continue"], reply: "Let's continue learning." },
+{ keys: ["i am ready"], reply: "Perfect! Let's begin." },
+{ keys: ["i am confused"], reply: "Don't worry, I will make it simple." },
+{ keys: ["explain"], reply: "Sure, I will explain step by step." },
+{ keys: ["example"], reply: "Here is an example for you." },
+{ keys: ["sentence"], reply: "Try making simple English sentences." },
+{ keys: ["word meaning"], reply: "Tell me the word, I will explain it." },
+{ keys: ["correct sentence"], reply: "Let me help you form correct sentences." },
+{ keys: ["speak english daily"], reply: "Yes, daily practice is the key." },
+{ keys: ["fluency tips"], reply: "Speak daily and listen carefully." },
+{ keys: ["confidence tips"], reply: "Practice in front of a mirror." },
+{ keys: ["best way to learn"], reply: "Practice, repetition, and listening." },
+{ keys: ["how long"], reply: "Practice 30 minutes daily for best results." },
+{ keys: ["is it hard"], reply: "No, it becomes easy with practice." },
+{ keys: ["i am beginner"], reply: "Great! Let's start from basics." },
+{ keys: ["advanced level"], reply: "We will slowly reach advanced level." },
+{ keys: ["daily routine"], reply: "Make English practice part of your routine." },
+{ keys: ["morning practice"], reply: "Morning is best for learning." },
+{ keys: ["night practice"], reply: "Night revision helps memory." },
+{ keys: ["listen english"], reply: "Listening improves understanding skills." },
+{ keys: ["watch english movies"], reply: "Good idea! It improves fluency." },
+{ keys: ["read books"], reply: "Reading builds vocabulary." },
+{ keys: ["write sentences"], reply: "Writing improves grammar skills." },
+{ keys: ["speak confidently"], reply: "Confidence comes with practice." },
+{ keys: ["i feel nervous"], reply: "Don't be nervous, just keep speaking." },
+{ keys: ["i made mistake"], reply: "Mistakes are part of learning." },
+{ keys: ["try again"], reply: "Yes, try again slowly." },
+{ keys: ["very good"], reply: "Excellent! Keep going." },
+{ keys: ["excellent"], reply: "Amazing work!" },
+{ keys: ["perfect"], reply: "Perfect! Well done." },
+{ keys: ["not sure"], reply: "Let me help you understand." },
+{ keys: ["i am stuck"], reply: "No problem, I will guide you." },
+{ keys: ["give example sentence"], reply: "Here is a simple sentence for practice." },
+{ keys: ["make sentence"], reply: "Try forming a sentence now." },
+{ keys: ["daily speaking"], reply: "Speak English daily to improve fast." },
+{ keys: ["conversation"], reply: "Let's practice conversation together." },
+{ keys: ["real life english"], reply: "Use English in daily life situations." },
+{ keys: ["job skills"], reply: "English improves your job opportunities." },
+{ keys: ["career"], reply: "Good English helps your career growth." },
+{ keys: ["future plan"], reply: "Keep learning for a better future." },
+{ keys: ["study plan"], reply: "Study English step by step daily." },
+{ keys: ["focus"], reply: "Stay focused and practice regularly." },
+{ keys: ["motivation"], reply: "You are doing great, keep going!" },
+{ keys: ["never give up"], reply: "Yes, never give up on learning." },
+{ keys: ["i will try"], reply: "Good! Keep trying every day." },
+{ keys: ["i am improving"], reply: "Excellent progress!" },
+{ keys: ["can i learn english fast"], reply: "Yes, if you practice daily and stay consistent." },
+{ keys: ["is english difficult"], reply: "No, it becomes easy with regular practice." },
+{ keys: ["how to become fluent"], reply: "Speak daily without fear and learn from mistakes." },
+{ keys: ["i feel shy"], reply: "Don't be shy, just start speaking slowly." },
+{ keys: ["i cannot speak"], reply: "You can! Start with simple sentences." },
+{ keys: ["i want fluency"], reply: "Practice speaking English every day." },
+{ keys: ["teach me english"], reply: "Sure! Let's start with basic sentences." },
+{ keys: ["correct my sentence"], reply: "Yes, I will help you correct it." },
+{ keys: ["is my english good"], reply: "It is improving! Keep practicing." },
+{ keys: ["how to think in english"], reply: "Try thinking simple words in English daily." },    
+{ keys: ["daily english practice"], reply: "Practice at least 20–30 minutes daily." },
+{ keys: ["conversation practice"], reply: "Let's practice simple daily conversations." },
+{ keys: ["real conversation"], reply: "Hello! How was your day today?" },
+{ keys: ["ask me question"], reply: "What did you do today?" },
+{ keys: ["answer question"], reply: "Try answering in full English sentences." },
+{ keys: ["correct grammar"], reply: "Focus on subject and verb agreement." },
+{ keys: ["tenses"], reply: "Tenses help describe time of actions." },
+{ keys: ["present tense"], reply: "Present tense describes current actions." },
+{ keys: ["past tense"], reply: "Past tense describes completed actions." },
+{ keys: ["future tense"], reply: "Future tense describes upcoming actions." },
+{ keys: ["make sentence easy"], reply: "Start with short and simple sentences." },
+{ keys: ["english speaking tips"], reply: "Speak daily, listen carefully, repeat often." },
+{ keys: ["learn vocabulary"], reply: "Learn 5 new words every day." },
+{ keys: ["new words"], reply: "Great! Learning new words improves fluency." },
+{ keys: ["pronounce words"], reply: "Try listening and repeating carefully." },
+{ keys: ["accent"], reply: "Accent improves with listening practice." },
+{ keys: ["listen more"], reply: "Listening helps you understand better." },
+{ keys: ["speak more"], reply: "Yes, speaking is the key to fluency." },
+{ keys: ["write more"], reply: "Writing improves grammar and structure." },
+{ keys: ["read more"], reply: "Reading improves vocabulary and understanding." },
+{ keys: ["daily goal"], reply: "Set a small daily English goal." },
+{ keys: ["study every day"], reply: "Consistency is the secret to success." },
+{ keys: ["i am improving english"], reply: "Great! Keep going forward." },
+{ keys: ["i want job"], reply: "Good English helps you get better jobs." },
+{ keys: ["interview english"], reply: "Practice common interview questions." },
+{ keys: ["self introduction"], reply: "My name is..., I am from..." },
+{ keys: ["introduce myself"], reply: "Start with your name and background." },
+{ keys: ["phone conversation"], reply: "Hello! How can I help you?" },
+{ keys: ["daily talk"], reply: "What did you eat today?" },
+{ keys: ["restaurant english"], reply: "I would like to order food." },
+{ keys: ["shopping english"], reply: "How much does this cost?" },
+{ keys: ["travel english"], reply: "Where is the nearest station?" },
+{ keys: ["hotel english"], reply: "I want to book a room." },
+{ keys: ["airport english"], reply: "Where is the boarding gate?" },
+{ keys: ["bus english"], reply: "Which bus goes to the city?" },
+{ keys: ["train english"], reply: "When is the next train?" },
+{ keys: ["direction"], reply: "Go straight and turn left." },
+{ keys: ["location"], reply: "It is near the market." },
+{ keys: ["help sentence"], reply: "Can you please help me?" },
+{ keys: ["polite english"], reply: "Please and thank you are important words." },
+{ keys: ["formal english"], reply: "Formal English is used in offices." },
+{ keys: ["informal english"], reply: "Informal English is used with friends." },
+{ keys: ["chat english"], reply: "Let's chat in simple English." },
+{ keys: ["daily routine english"], reply: "I wake up, eat, study, and sleep." },
+{ keys: ["morning routine"], reply: "I wake up early in the morning." },
+{ keys: ["night routine"], reply: "I sleep at night after study." },
+{ keys: ["habit"], reply: "Good habits improve your life." },
+{ keys: ["discipline"], reply: "Discipline helps you succeed." },
+{ keys: ["focus study"], reply: "Focus on learning one step at a time." },
+{ keys: ["success tips"], reply: "Hard work and practice lead to success." },
+{ keys: ["english partner"], reply: "I am your English speaking partner." },
+{ keys: ["talk practice"], reply: "Let's practice speaking together." },
+{ keys: ["english support"], reply: "I am always here to support you." },
+{ keys: ["learning path"], reply: "Start from basic and move to advanced." },
+{ keys: ["beginner help"], reply: "Start with simple daily sentences." },
+{ keys: ["advanced help"], reply: "We will improve step by step." },
+{ keys: ["confidence speaking"], reply: "Confidence comes from daily speaking." },
+{ keys: ["fear speaking"], reply: "Don't fear mistakes, just speak." },
+{ keys: ["english fear"], reply: "Practice removes fear." },
+{ keys: ["good progress"], reply: "You are doing very well!" },
+
+
+  // DAILY LIFE
+  { keys: ["what are you doing"], reply: "I am helping you learn English." },
+  { keys: ["time"], reply: "I don't know exact time, check your device." },
+  { keys: ["weather"], reply: "Weather looks good today!" },
+
+  // INTRO
+  { keys: ["my name"], reply: "Nice name! Keep speaking English." },
+
+  // DEFAULT
+  { keys: ["default"], reply: "Try speaking simple English sentences." }
+];
+
+// 💬 CHAT UI
+function addMsg(text, type){
+    let div = document.createElement("div");
+    div.className = "msg " + type;
+    div.innerText = text;
+    document.getElementById("chat").appendChild(div);
+    document.getElementById("chat").scrollTop = chat.scrollHeight;
+}
+
+// 🧠 AI ENGINE
+function getReply(text){
+    text = text.toLowerCase();
+
+    for(let i=0;i<brain.length;i++){
+        for(let j=0;j<brain[i].keys.length;j++){
+            if(text.includes(brain[i].keys[j])){
+                return brain[i].reply;
+            }
+        }
+    }
+
+    return brain[brain.length-1].reply;
+}
+
+// 🔊 TEXT TO SPEECH
+function speak(text){
+    let msg = new SpeechSynthesisUtterance(text);
+    msg.lang = "en-US";
+    msg.rate = 0.95;
+    speechSynthesis.speak(msg);
+}
+
+// 🎤 SPEECH TO TEXT
+function startSpeech(){
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if(!SpeechRecognition){
+        alert("Not supported in this browser");
+        return;
+    }
+
+    let recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.start();
+
+    recognition.onresult = function(e){
+        let text = e.results[0][0].transcript;
+        document.getElementById("input").value = text;
+        send();
+    };
+}
+
+// 🎮 XP SYSTEM
+function addXP(){
+    xp += 10;
+
+    if(xp >= 100){
+        level++;
+        xp = 0;
+        alert("🎉 Level Up! Level " + level);
+    }
+}
+
+// 💬 SEND MESSAGE
+function send(){
+    let input = document.getElementById("input");
+    let text = input.value;
+    if(!text) return;
+
+    addMsg(text, "user");
+
+    let reply = getReply(text);
+
+    addMsg(reply, "bot");
+    speak(reply);
+
+    addXP();
+
+    input.value = "";
+}
+
+// welcome message
+addMsg("Hello! I am your AI English Tutor. Start speaking!", "bot");
+
+
+document.getElementById("input").addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+        send();
+    }
+});
+
+</script>
+
+</body>
+</html>
